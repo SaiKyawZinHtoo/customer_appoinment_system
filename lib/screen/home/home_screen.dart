@@ -4,6 +4,8 @@ import 'package:customer_appointment_system/screen/customer/customer_information
 import 'package:customer_appointment_system/screen/contactUs/contact_us_screen.dart';
 import 'package:customer_appointment_system/screen/FAQ/faq_screen.dart';
 import 'package:customer_appointment_system/screen/aboutUs/about_us_screen.dart';
+import 'package:customer_appointment_system/screen/notification/notification_screen.dart';
+import 'package:customer_appointment_system/service/notification_repository.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -14,6 +16,20 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int _currentIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    NotificationRepository.instance.addListener(_onNotifChanged);
+  }
+
+  @override
+  void dispose() {
+    NotificationRepository.instance.removeListener(_onNotifChanged);
+    super.dispose();
+  }
+
+  void _onNotifChanged() => setState(() {});
   final List<_TileData> _tiles = const [
     _TileData('Appointment', Icons.event),
     _TileData('Customer', Icons.people),
@@ -65,6 +81,24 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
                 itemBuilder: (context, index) {
                   final item = _tiles[index];
+                  // Notification tile: render badge inside the tile (keeps Card+InkWell)
+                  if (item.title == 'Notification') {
+                    final int count = NotificationRepository.instance
+                        .pendingCount();
+                    return _ActionTile(
+                      label: item.title,
+                      icon: item.icon,
+                      badgeCount: count > 0 ? count : null,
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) => const NotificationScreen(),
+                          ),
+                        );
+                      },
+                    );
+                  }
+
                   return _ActionTile(
                     label: item.title,
                     icon: item.icon,
@@ -158,12 +192,14 @@ class _ActionTile extends StatelessWidget {
   final String label;
   final IconData icon;
   final VoidCallback? onTap;
+  final int? badgeCount;
   // ignore: use_super_parameters
   const _ActionTile({
     Key? key,
     required this.label,
     required this.icon,
     this.onTap,
+    this.badgeCount,
   }) : super(key: key);
 
   @override
@@ -178,21 +214,58 @@ class _ActionTile extends StatelessWidget {
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: onTap,
-        child: Container(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(icon, color: fgColor, size: 48),
-              const SizedBox(height: 12),
-              Text(
-                label,
-                textAlign: TextAlign.center,
-                style: theme.textTheme.titleLarge?.copyWith(color: fgColor),
+        child: Stack(
+          children: [
+            SizedBox.expand(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Icon(icon, color: fgColor, size: 48),
+                    const SizedBox(height: 12),
+                    Text(
+                      label,
+                      textAlign: TextAlign.center,
+                      style: theme.textTheme.titleLarge?.copyWith(
+                        color: fgColor,
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ],
-          ),
+            ),
+            if (badgeCount != null && badgeCount! > 0)
+              Positioned(
+                right: 8,
+                top: 8,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.redAccent,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  constraints: const BoxConstraints(
+                    minWidth: 24,
+                    minHeight: 24,
+                  ),
+                  child: Center(
+                    child: Text(
+                      '$badgeCount',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+          ],
         ),
       ),
     );
