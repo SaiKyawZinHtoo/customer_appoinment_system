@@ -171,7 +171,8 @@ class _CustomerListInformationScreenState
                 ? Center(child: Text('No customers for this date'))
                 : ListView.separated(
                     itemCount: filteredCustomers.length,
-                    separatorBuilder: (_, __) => const Divider(height: 1),
+                    // Remove the thin divider line between cards — keep vertical spacing instead.
+                    separatorBuilder: (_, __) => const SizedBox(height: 8),
                     itemBuilder: (context, i) {
                       final c = filteredCustomers[i];
                       return CustomerCard(
