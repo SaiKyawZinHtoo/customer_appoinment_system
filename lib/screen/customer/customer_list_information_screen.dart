@@ -179,12 +179,14 @@ class _CustomerListInformationScreenState
                         customer: c,
                         onTap: () => _showCustomerDetail(context, c),
                         onCall: () => _tryCall(c.phone),
-                        onToggleCompleted: () =>
-                            AppointmentRepository.instance.setCustomerCompleted(
-                              widget.date,
-                              c.id,
-                              !(c.completed == true),
-                            ),
+                        onToggleCompleted: (c.completed == true)
+                            ? null
+                            : () => AppointmentRepository.instance
+                                  .setCustomerCompleted(
+                                    widget.date,
+                                    c.id,
+                                    true,
+                                  ),
                       );
                     },
                   ),

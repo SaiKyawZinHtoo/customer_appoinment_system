@@ -11,13 +11,13 @@ class CustomerCard extends StatelessWidget {
     required this.customer,
     required this.onTap,
     required this.onCall,
-    required this.onToggleCompleted,
+    this.onToggleCompleted,
   });
 
   final Customer customer;
   final VoidCustomerCallback onTap;
   final VoidCustomerCallback onCall;
-  final VoidCustomerCallback onToggleCompleted;
+  final VoidCustomerCallback? onToggleCompleted;
 
   @override
   Widget build(BuildContext context) {
@@ -130,6 +130,9 @@ class CustomerCard extends StatelessWidget {
                     ),
                     iconSize: 22,
                     onPressed: onToggleCompleted,
+                    tooltip: (c.completed == true)
+                        ? 'Completed (cannot undo)'
+                        : 'Mark as done',
                   ),
                 ],
               ),
