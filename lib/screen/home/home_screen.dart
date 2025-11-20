@@ -16,6 +16,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int _currentIndex = 0;
+  String _lang = 'Eng';
 
   @override
   void initState() {
@@ -75,19 +76,38 @@ class _HomeScreenState extends State<HomeScreen> {
         actions: [
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-            child: DropdownButtonHideUnderline(
-              child: DropdownButton<String>(
-                value: 'Eng',
-                items: const [
-                  DropdownMenuItem(value: 'Eng', child: Text('Eng')),
-                  DropdownMenuItem(value: 'My', child: Text('မြန်မာ')),
-                ],
-                onChanged: (value) {},
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  color: theme.colorScheme.onPrimary,
+            child: PopupMenuButton<String>(
+              tooltip: 'Language',
+              onSelected: (v) => setState(() => _lang = v),
+              itemBuilder: (ctx) => const [
+                PopupMenuItem(value: 'Eng', child: Text('Eng')),
+                PopupMenuItem(value: 'My', child: Text('မြန်မာ')),
+              ],
+              // child gives a compact, stable UI without a large overlay
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
                 ),
-                dropdownColor: theme.colorScheme.surface,
-                iconEnabledColor: theme.colorScheme.onPrimary,
+                decoration: BoxDecoration(
+                  color: Colors.transparent,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Row(
+                  children: [
+                    Text(
+                      _lang,
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: theme.colorScheme.onPrimary,
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    Icon(
+                      Icons.arrow_drop_down,
+                      color: theme.colorScheme.onPrimary,
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
