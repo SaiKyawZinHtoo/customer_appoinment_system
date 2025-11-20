@@ -42,9 +42,36 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
+    final int totalNotifs = NotificationRepository.instance.pendingCount(
+      daysAhead: 30,
+    );
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Customer Appointment System'),
+        title: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text('Customer Appointment System'),
+            if (totalNotifs > 0) ...[
+              const SizedBox(width: 8),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: Colors.redAccent,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  '$totalNotifs',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
+          ],
+        ),
         actions: [
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -153,17 +180,21 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
-        onTap: (i) {
+        onTap: (i) async {
+          // show selection immediately
           setState(() => _currentIndex = i);
           // Navigate when Contact Us or About Us are tapped in bottom nav.
           if (i == 1) {
-            Navigator.of(context).push(
+            await Navigator.of(context).push(
               MaterialPageRoute(builder: (context) => const ContactUsScreen()),
             );
+            // when returning, reset to Home selection
+            setState(() => _currentIndex = 0);
           } else if (i == 2) {
-            Navigator.of(context).push(
+            await Navigator.of(context).push(
               MaterialPageRoute(builder: (context) => const AboutUsScreen()),
             );
+            setState(() => _currentIndex = 0);
           }
         },
         items: const [
