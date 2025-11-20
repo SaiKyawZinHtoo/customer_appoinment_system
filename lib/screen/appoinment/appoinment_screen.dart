@@ -120,9 +120,24 @@ class _AppoinmentScreenState extends State<AppoinmentScreen> {
                       ),
                       Expanded(
                         child: Center(
-                          child: Text(
-                            '${_monthNames[_displayMonth.month - 1]} ${_displayMonth.year}',
-                            style: theme.textTheme.titleLarge,
+                          child: InkWell(
+                            borderRadius: BorderRadius.circular(6),
+                            onTap: () => _pickMonthYear(context),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  '${_monthNames[_displayMonth.month - 1]} ${_displayMonth.year}',
+                                  style: theme.textTheme.titleLarge,
+                                ),
+                                const SizedBox(width: 8),
+                                Icon(
+                                  Icons.calendar_today,
+                                  size: 18,
+                                  color: theme.iconTheme.color,
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                       ),
@@ -339,6 +354,108 @@ class _AppoinmentScreenState extends State<AppoinmentScreen> {
         foregroundColor: theme.colorScheme.onSecondary,
         child: const Icon(Icons.add),
       ),
+    );
+  }
+
+  Future<void> _pickMonthYear(BuildContext context) async {
+    // show a bottom sheet with month and year selectors
+    final now = DateTime.now();
+    int selMonth = _displayMonth.month;
+    int selYear = _displayMonth.year;
+
+    final minYear = now.year - 5;
+    final maxYear = now.year + 5;
+
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      builder: (ctx) {
+        return Padding(
+          padding: MediaQuery.of(ctx).viewInsets,
+          child: StatefulBuilder(
+            builder: (ctx2, setStateSB) {
+              return Container(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Text(
+                      'Pick month & year',
+                      style: Theme.of(ctx).textTheme.titleMedium,
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: DropdownButton<int>(
+                            value: selMonth,
+                            isExpanded: true,
+                            items: List.generate(12, (i) => i + 1)
+                                .map(
+                                  (m) => DropdownMenuItem(
+                                    value: m,
+                                    child: Text(_monthNames[m - 1]),
+                                  ),
+                                )
+                                .toList(),
+                            onChanged: (v) =>
+                                setStateSB(() => selMonth = v ?? selMonth),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: DropdownButton<int>(
+                            value: selYear,
+                            isExpanded: true,
+                            items:
+                                List.generate(
+                                      maxYear - minYear + 1,
+                                      (i) => minYear + i,
+                                    )
+                                    .map(
+                                      (y) => DropdownMenuItem(
+                                        value: y,
+                                        child: Text('$y'),
+                                      ),
+                                    )
+                                    .toList(),
+                            onChanged: (v) =>
+                                setStateSB(() => selYear = v ?? selYear),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        TextButton(
+                          onPressed: () => Navigator.of(ctx).pop(),
+                          child: const Text('Cancel'),
+                        ),
+                        const SizedBox(width: 8),
+                        ElevatedButton(
+                          onPressed: () {
+                            // apply selection
+                            setState(() {
+                              _displayMonth = DateTime(selYear, selMonth, 1);
+                              _selectedDate =
+                                  null; // reset selection when month changes
+                            });
+                            Navigator.of(ctx).pop();
+                          },
+                          child: const Text('OK'),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+        );
+      },
     );
   }
 }
