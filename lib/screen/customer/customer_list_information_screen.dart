@@ -5,6 +5,7 @@ import 'package:customer_appointment_system/service/appointment_repository.dart'
 import 'package:customer_appointment_system/model/customer.dart';
 import 'package:customer_appointment_system/screen/customer/customer_information_screen.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:customer_appointment_system/widget/customer_card.dart';
 
 class CustomerListInformationScreen extends StatefulWidget {
   const CustomerListInformationScreen({
@@ -26,6 +27,7 @@ class _CustomerListInformationScreenState
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
   String _genderFilter = 'All';
+
   @override
   void initState() {
     super.initState();
@@ -49,7 +51,6 @@ class _CustomerListInformationScreenState
   @override
   Widget build(BuildContext context) {
     final customers = AppointmentRepository.instance.getForDate(widget.date);
-    final theme = Theme.of(context);
     // Apply search & filter
     final filteredCustomers = customers.where((c) {
       final q = _searchQuery;
@@ -173,153 +174,16 @@ class _CustomerListInformationScreenState
                     separatorBuilder: (_, __) => const Divider(height: 1),
                     itemBuilder: (context, i) {
                       final c = filteredCustomers[i];
-                      return Card(
-                        margin: const EdgeInsets.symmetric(
-                          horizontal: 12.0,
-                          vertical: 8.0,
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        elevation: 3,
-                        child: InkWell(
-                          borderRadius: BorderRadius.circular(12),
-                          onTap: () => _showCustomerDetail(context, c),
-                          child: Padding(
-                            padding: const EdgeInsets.all(12.0),
-                            child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                // Avatar / photo
-                                if (c.photoPath != null)
-                                  ClipRRect(
-                                    borderRadius: BorderRadius.circular(8),
-                                    child: Image.file(
-                                      File(c.photoPath!),
-                                      width: 56,
-                                      height: 56,
-                                      fit: BoxFit.cover,
-                                    ),
-                                  )
-                                else
-                                  CircleAvatar(
-                                    radius: 28,
-                                    child: const Icon(Icons.person, size: 28),
-                                  ),
-                                const SizedBox(width: 12),
-                                // Main info
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        c.name,
-                                        style: theme.textTheme.titleMedium
-                                            ?.copyWith(
-                                              fontWeight: FontWeight.w600,
-                                            ),
-                                      ),
-                                      const SizedBox(height: 4),
-                                      Text(
-                                        c.phone,
-                                        style: theme.textTheme.bodyMedium,
-                                      ),
-                                      const SizedBox(height: 8),
-                                      Text(
-                                        'Appointment: ${_formatDateDisplay(c.appointmentDate)}',
-                                        style: const TextStyle(
-                                          color: Colors.red,
-                                        ),
-                                      ),
-                                      if (c.location != null &&
-                                          c.location!.isNotEmpty)
-                                        Padding(
-                                          padding: const EdgeInsets.only(
-                                            top: 8.0,
-                                          ),
-                                          child: Row(
-                                            children: [
-                                              const Icon(
-                                                Icons.location_on,
-                                                size: 14,
-                                                color: Colors.grey,
-                                              ),
-                                              const SizedBox(width: 6),
-                                              Expanded(
-                                                child: Text(
-                                                  c.location!,
-                                                  style:
-                                                      theme.textTheme.bodySmall,
-                                                  overflow:
-                                                      TextOverflow.ellipsis,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      const SizedBox(height: 8),
-                                      // Result chip
-                                      Chip(
-                                        label: Text(
-                                          (c.completed == true)
-                                              ? 'Done'
-                                              : 'Remaining',
-                                        ),
-                                        backgroundColor: (c.completed == true)
-                                            ? Colors.green[50]
-                                            : Colors.orange[50],
-                                        labelStyle: TextStyle(
-                                          color: (c.completed == true)
-                                              ? Colors.green[800]
-                                              : Colors.orange[800],
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                const SizedBox(width: 8),
-                                // Actions column
-                                Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    IconButton(
-                                      padding: EdgeInsets.zero,
-                                      constraints: const BoxConstraints(),
-                                      icon: const Icon(
-                                        Icons.phone,
-                                        color: Colors.green,
-                                      ),
-                                      iconSize: 26,
-                                      onPressed: () => _tryCall(c.phone),
-                                    ),
-                                    const SizedBox(height: 6),
-                                    IconButton(
-                                      padding: EdgeInsets.zero,
-                                      constraints: const BoxConstraints(),
-                                      icon: Icon(
-                                        (c.completed == true)
-                                            ? Icons.check_circle
-                                            : Icons.circle_outlined,
-                                        color: (c.completed == true)
-                                            ? Colors.green
-                                            : Colors.grey,
-                                      ),
-                                      iconSize: 22,
-                                      onPressed: () => AppointmentRepository
-                                          .instance
-                                          .setCustomerCompleted(
-                                            widget.date,
-                                            c.id,
-                                            !(c.completed == true),
-                                          ),
-                                    ),
-                                  ],
-                                ),
-                              ],
+                      return CustomerCard(
+                        customer: c,
+                        onTap: () => _showCustomerDetail(context, c),
+                        onCall: () => _tryCall(c.phone),
+                        onToggleCompleted: () =>
+                            AppointmentRepository.instance.setCustomerCompleted(
+                              widget.date,
+                              c.id,
+                              !(c.completed == true),
                             ),
-                          ),
-                        ),
                       );
                     },
                   ),
