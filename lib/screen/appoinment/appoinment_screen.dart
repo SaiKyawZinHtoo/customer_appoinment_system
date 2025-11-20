@@ -55,7 +55,7 @@ class _AppoinmentScreenState extends State<AppoinmentScreen> {
     final year = _displayMonth.year;
     final firstOfMonth = DateTime(year, month, 1);
     final firstWeekday = firstOfMonth.weekday % 7; // Sun=0..Sat=6
-    const daysInMonth = 31;
+    final int daysInMonth = DateTime(year, month + 1, 0).day;
 
     final days = List<int>.generate(42, (i) {
       final dayIndex = i - firstWeekday + 1;
@@ -167,20 +167,25 @@ class _AppoinmentScreenState extends State<AppoinmentScreen> {
                   delegate: SliverChildBuilderDelegate((context, i) {
                     final day = days[i];
                     final isActive = day > 0 && day <= daysInMonth;
-                    final cellDate = DateTime(year, month, day);
                     final today = DateTime.now();
                     final todayDate = DateTime(
                       today.year,
                       today.month,
                       today.day,
                     );
+                    // Create a cellDate for this grid cell; for inactive cells
+                    // this may point to a neighbouring month, but we only
+                    // count markers when the cell is part of the displayed month.
+                    final cellDate = DateTime(year, month, day);
                     final isSelectable =
                         isActive && !cellDate.isBefore(todayDate);
-                    // Only show markers for remaining (not completed) appointments
-                    final markerCount = AppointmentRepository.instance
-                        .getForDate(cellDate)
-                        .where((c) => c.completed != true)
-                        .length;
+                    // Only compute markerCount for active days (inside the month)
+                    final int markerCount = isActive
+                        ? AppointmentRepository.instance
+                              .getForDate(cellDate)
+                              .where((c) => c.completed != true)
+                              .length
+                        : 0;
                     final showMarker = isActive && markerCount > 0;
                     return _DayCell(
                       day: day,
