@@ -81,61 +81,8 @@ class _AppoinmentScreenState extends State<AppoinmentScreen> {
             return const SizedBox.shrink();
           },
         ),
-        title: Row(
-          mainAxisSize: MainAxisSize.max,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            // Prev month button to the left of title (inside title area)
-            IconButton(
-              tooltip: 'Previous month',
-              icon: const Icon(Icons.chevron_left),
-              onPressed: () {
-                final today = DateTime.now();
-                final currentIndex = today.year * 12 + today.month;
-                final displayIndex =
-                    _displayMonth.year * 12 + _displayMonth.month;
-                final canPrev = displayIndex > currentIndex - 12;
-                if (canPrev) {
-                  setState(
-                    () => _displayMonth = DateTime(
-                      _displayMonth.year,
-                      _displayMonth.month - 1,
-                      1,
-                    ),
-                  );
-                }
-              },
-            ),
-            Expanded(
-              child: Center(
-                child: Text(
-                  '${_monthNames[_displayMonth.month - 1]} ${_displayMonth.year}',
-                ),
-              ),
-            ),
-            // Next month button to the right
-            IconButton(
-              tooltip: 'Next month',
-              icon: const Icon(Icons.chevron_right),
-              onPressed: () {
-                final today = DateTime.now();
-                final currentIndex = today.year * 12 + today.month;
-                final displayIndex =
-                    _displayMonth.year * 12 + _displayMonth.month;
-                final canNext = displayIndex < currentIndex + 12;
-                if (canNext) {
-                  setState(
-                    () => _displayMonth = DateTime(
-                      _displayMonth.year,
-                      _displayMonth.month + 1,
-                      1,
-                    ),
-                  );
-                }
-              },
-            ),
-          ],
-        ),
+        // Keep AppBar simple: show a short title only to avoid overflow.
+        title: const Text('Appointment'),
         centerTitle: true,
         elevation: 0,
       ),
@@ -144,6 +91,64 @@ class _AppoinmentScreenState extends State<AppoinmentScreen> {
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           child: Column(
             children: [
+              // Month navigator (moved below AppBar for a cleaner AppBar UX)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                child: Row(
+                  children: [
+                    // Prev month button
+                    IconButton(
+                      tooltip: 'Previous month',
+                      icon: const Icon(Icons.chevron_left),
+                      onPressed: () {
+                        final today = DateTime.now();
+                        final currentIndex = today.year * 12 + today.month;
+                        final displayIndex =
+                            _displayMonth.year * 12 + _displayMonth.month;
+                        final canPrev = displayIndex > currentIndex - 12;
+                        if (canPrev) {
+                          setState(
+                            () => _displayMonth = DateTime(
+                              _displayMonth.year,
+                              _displayMonth.month - 1,
+                              1,
+                            ),
+                          );
+                        }
+                      },
+                    ),
+                    Expanded(
+                      child: Center(
+                        child: Text(
+                          '${_monthNames[_displayMonth.month - 1]} ${_displayMonth.year}',
+                          style: theme.textTheme.titleLarge,
+                        ),
+                      ),
+                    ),
+                    // Next month button
+                    IconButton(
+                      tooltip: 'Next month',
+                      icon: const Icon(Icons.chevron_right),
+                      onPressed: () {
+                        final today = DateTime.now();
+                        final currentIndex = today.year * 12 + today.month;
+                        final displayIndex =
+                            _displayMonth.year * 12 + _displayMonth.month;
+                        final canNext = displayIndex < currentIndex + 12;
+                        if (canNext) {
+                          setState(
+                            () => _displayMonth = DateTime(
+                              _displayMonth.year,
+                              _displayMonth.month + 1,
+                              1,
+                            ),
+                          );
+                        }
+                      },
+                    ),
+                  ],
+                ),
+              ),
               // Weekday header
               _WeekdayHeader(isDark: isDark, theme: theme),
               const SizedBox(height: 8),
