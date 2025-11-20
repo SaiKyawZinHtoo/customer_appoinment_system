@@ -114,12 +114,12 @@ class _NotificationItemState extends State<NotificationItem>
       duration: const Duration(milliseconds: 300),
     );
     _size = Tween<double>(
-      begin: 1.0,
-      end: 0.0,
+      begin: 0.0,
+      end: 1.0,
     ).animate(CurvedAnimation(parent: _ctl, curve: Curves.easeInOut));
     _fade = Tween<double>(
-      begin: 1.0,
-      end: 0.0,
+      begin: 0.0,
+      end: 1.0,
     ).animate(CurvedAnimation(parent: _ctl, curve: Curves.easeInOut));
     // play entrance animation
     // start from collapsed and expand quickly for subtle entrance
