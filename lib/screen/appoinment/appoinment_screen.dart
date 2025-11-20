@@ -198,7 +198,24 @@ class _AppoinmentScreenState extends State<AppoinmentScreen> {
                           ).isAtSameMomentAs(_selectedDate!),
                       isSelectable: isSelectable,
                       onTap: isSelectable
-                          ? () => setState(() => _selectedDate = cellDate)
+                          ? () {
+                              // If this date has appointments, navigate to the
+                              // customer list for that date (same behaviour as
+                              // tapping an item in the selected-day details).
+                              if (markerCount > 0) {
+                                Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder: (_) =>
+                                        CustomerListInformationScreen(
+                                          date: cellDate,
+                                        ),
+                                  ),
+                                );
+                              } else {
+                                // otherwise just select the date to show details
+                                setState(() => _selectedDate = cellDate);
+                              }
+                            }
                           : null,
                       theme: theme,
                       isDark: isDark,
