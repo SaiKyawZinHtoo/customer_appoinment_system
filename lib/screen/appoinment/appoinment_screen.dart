@@ -89,200 +89,201 @@ class _AppoinmentScreenState extends State<AppoinmentScreen> {
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          child: Column(
-            children: [
+          child: CustomScrollView(
+            slivers: [
               // Month navigator (moved below AppBar for a cleaner AppBar UX)
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8.0),
-                child: Row(
-                  children: [
-                    // Prev month button
-                    IconButton(
-                      tooltip: 'Previous month',
-                      icon: const Icon(Icons.chevron_left),
-                      onPressed: () {
-                        final today = DateTime.now();
-                        final currentIndex = today.year * 12 + today.month;
-                        final displayIndex =
-                            _displayMonth.year * 12 + _displayMonth.month;
-                        final canPrev = displayIndex > currentIndex - 12;
-                        if (canPrev) {
-                          setState(
-                            () => _displayMonth = DateTime(
-                              _displayMonth.year,
-                              _displayMonth.month - 1,
-                              1,
-                            ),
-                          );
-                        }
-                      },
-                    ),
-                    Expanded(
-                      child: Center(
-                        child: Text(
-                          '${_monthNames[_displayMonth.month - 1]} ${_displayMonth.year}',
-                          style: theme.textTheme.titleLarge,
-                        ),
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8.0),
+                  child: Row(
+                    children: [
+                      // Prev month button
+                      IconButton(
+                        tooltip: 'Previous month',
+                        icon: const Icon(Icons.chevron_left),
+                        onPressed: () {
+                          final today = DateTime.now();
+                          final currentIndex = today.year * 12 + today.month;
+                          final displayIndex =
+                              _displayMonth.year * 12 + _displayMonth.month;
+                          final canPrev = displayIndex > currentIndex - 12;
+                          if (canPrev) {
+                            setState(
+                              () => _displayMonth = DateTime(
+                                _displayMonth.year,
+                                _displayMonth.month - 1,
+                                1,
+                              ),
+                            );
+                          }
+                        },
                       ),
-                    ),
-                    // Next month button
-                    IconButton(
-                      tooltip: 'Next month',
-                      icon: const Icon(Icons.chevron_right),
-                      onPressed: () {
-                        final today = DateTime.now();
-                        final currentIndex = today.year * 12 + today.month;
-                        final displayIndex =
-                            _displayMonth.year * 12 + _displayMonth.month;
-                        final canNext = displayIndex < currentIndex + 12;
-                        if (canNext) {
-                          setState(
-                            () => _displayMonth = DateTime(
-                              _displayMonth.year,
-                              _displayMonth.month + 1,
-                              1,
-                            ),
-                          );
-                        }
-                      },
-                    ),
-                  ],
-                ),
-              ),
-              // Weekday header
-              _WeekdayHeader(isDark: isDark, theme: theme),
-              const SizedBox(height: 8),
-              // Days grid
-              Expanded(
-                child: Container(
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(8),
-                    color: isDark ? AppColors.darkSurface : AppColors.surface,
-                    border: Border.all(
-                      color: isDark ? Colors.white12 : Colors.grey.shade300,
-                    ),
-                  ),
-                  padding: const EdgeInsets.all(8),
-                  child: GridView.builder(
-                    gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 7,
-                          mainAxisSpacing: 4,
-                          crossAxisSpacing: 4,
-                          childAspectRatio: 1.4,
-                        ),
-                    itemCount: days.length,
-                    itemBuilder: (context, i) {
-                      final day = days[i];
-                      final isActive = day > 0 && day <= daysInMonth;
-                      final cellDate = DateTime(year, month, day);
-                      final today = DateTime.now();
-                      final todayDate = DateTime(
-                        today.year,
-                        today.month,
-                        today.day,
-                      );
-                      final isSelectable =
-                          isActive && !cellDate.isBefore(todayDate);
-                      // Only show markers for remaining (not completed) appointments
-                      final markerCount = AppointmentRepository.instance
-                          .getForDate(cellDate)
-                          .where((c) => c.completed != true)
-                          .length;
-                      final showMarker = isActive && markerCount > 0;
-                      return _DayCell(
-                        day: day,
-                        isActive: isActive,
-                        isSunday: (i % 7) == 0,
-                        isSaturday: (i % 7) == 6,
-                        showMarker: showMarker,
-                        markerCount: markerCount,
-                        isSelected:
-                            _selectedDate != null &&
-                            DateTime(
-                              year,
-                              month,
-                              day,
-                            ).isAtSameMomentAs(_selectedDate!),
-                        isSelectable: isSelectable,
-                        onTap: isSelectable
-                            ? () => setState(() => _selectedDate = cellDate)
-                            : null,
-                        theme: theme,
-                        isDark: isDark,
-                      );
-                    },
-                  ),
-                ),
-              ),
-              const SizedBox(height: 8),
-              // Selected day details / appointment list
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: isDark ? AppColors.darkSurface : AppColors.surface,
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(
-                    color: isDark ? Colors.white12 : Colors.grey.shade200,
-                  ),
-                ),
-                child: _selectedDate == null
-                    ? Center(
-                        child: Text(
-                          'Select a day to view appointments',
-                          style: theme.textTheme.bodyMedium,
-                        ),
-                      )
-                    : Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          Text(
-                            'Appointments for ${_monthNames[_selectedDate!.month - 1]} ${_selectedDate!.day}, ${_selectedDate!.year}',
+                      Expanded(
+                        child: Center(
+                          child: Text(
+                            '${_monthNames[_displayMonth.month - 1]} ${_displayMonth.year}',
                             style: theme.textTheme.titleLarge,
                           ),
-                          const SizedBox(height: 8),
-                          Builder(
-                            builder: (context) {
-                              // Show only remaining (not completed) appointments in the
-                              // selected-day summary so the calendar marker counts
-                              // down as items are marked done.
-                              final customersForSelected = AppointmentRepository
-                                  .instance
-                                  .getForDate(_selectedDate!)
-                                  .where((c) => c.completed != true)
-                                  .toList();
-                              if (customersForSelected.isEmpty) {
-                                return Text(
-                                  'No appointments',
-                                  style: theme.textTheme.bodyMedium,
-                                );
-                              }
-                              return Column(
-                                children: customersForSelected
-                                    .map(
-                                      (c) => ListTile(
-                                        title: Text(c.displayTitle),
-                                        leading: const Icon(Icons.event_note),
-                                        onTap: () {
-                                          // Open the customer list/detail screen
-                                          Navigator.of(context).push(
-                                            MaterialPageRoute(
-                                              builder: (_) =>
-                                                  CustomerListInformationScreen(
-                                                    date: _selectedDate!,
-                                                    initialCustomerId: c.id,
-                                                  ),
-                                            ),
-                                          );
-                                        },
-                                      ),
-                                    )
-                                    .toList(),
-                              );
-                            },
-                          ),
-                        ],
+                        ),
                       ),
+                      // Next month button
+                      IconButton(
+                        tooltip: 'Next month',
+                        icon: const Icon(Icons.chevron_right),
+                        onPressed: () {
+                          final today = DateTime.now();
+                          final currentIndex = today.year * 12 + today.month;
+                          final displayIndex =
+                              _displayMonth.year * 12 + _displayMonth.month;
+                          final canNext = displayIndex < currentIndex + 12;
+                          if (canNext) {
+                            setState(
+                              () => _displayMonth = DateTime(
+                                _displayMonth.year,
+                                _displayMonth.month + 1,
+                                1,
+                              ),
+                            );
+                          }
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+              // Weekday header
+              SliverToBoxAdapter(
+                child: _WeekdayHeader(isDark: isDark, theme: theme),
+              ),
+
+              // Spacing
+              const SliverToBoxAdapter(child: SizedBox(height: 8)),
+
+              // Days grid as a SliverGrid so the whole page scrolls smoothly
+              SliverPadding(
+                padding: const EdgeInsets.all(8),
+                sliver: SliverGrid(
+                  delegate: SliverChildBuilderDelegate((context, i) {
+                    final day = days[i];
+                    final isActive = day > 0 && day <= daysInMonth;
+                    final cellDate = DateTime(year, month, day);
+                    final today = DateTime.now();
+                    final todayDate = DateTime(
+                      today.year,
+                      today.month,
+                      today.day,
+                    );
+                    final isSelectable =
+                        isActive && !cellDate.isBefore(todayDate);
+                    // Only show markers for remaining (not completed) appointments
+                    final markerCount = AppointmentRepository.instance
+                        .getForDate(cellDate)
+                        .where((c) => c.completed != true)
+                        .length;
+                    final showMarker = isActive && markerCount > 0;
+                    return _DayCell(
+                      day: day,
+                      isActive: isActive,
+                      isSunday: (i % 7) == 0,
+                      isSaturday: (i % 7) == 6,
+                      showMarker: showMarker,
+                      markerCount: markerCount,
+                      isSelected:
+                          _selectedDate != null &&
+                          DateTime(
+                            year,
+                            month,
+                            day,
+                          ).isAtSameMomentAs(_selectedDate!),
+                      isSelectable: isSelectable,
+                      onTap: isSelectable
+                          ? () => setState(() => _selectedDate = cellDate)
+                          : null,
+                      theme: theme,
+                      isDark: isDark,
+                    );
+                  }, childCount: days.length),
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 7,
+                    mainAxisSpacing: 4,
+                    crossAxisSpacing: 4,
+                    childAspectRatio: 1.4,
+                  ),
+                ),
+              ),
+
+              const SliverToBoxAdapter(child: SizedBox(height: 8)),
+
+              // Selected day details / appointment list
+              SliverToBoxAdapter(
+                child: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: isDark ? AppColors.darkSurface : AppColors.surface,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color: isDark ? Colors.white12 : Colors.grey.shade200,
+                    ),
+                  ),
+                  child: _selectedDate == null
+                      ? Center(
+                          child: Text(
+                            'Select a day to view appointments',
+                            style: theme.textTheme.bodyMedium,
+                          ),
+                        )
+                      : Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            Text(
+                              'Appointments for ${_monthNames[_selectedDate!.month - 1]} ${_selectedDate!.day}, ${_selectedDate!.year}',
+                              style: theme.textTheme.titleLarge,
+                            ),
+                            const SizedBox(height: 8),
+                            Builder(
+                              builder: (context) {
+                                // Show only remaining (not completed) appointments in the
+                                // selected-day summary so the calendar marker counts
+                                // down as items are marked done.
+                                final customersForSelected =
+                                    AppointmentRepository.instance
+                                        .getForDate(_selectedDate!)
+                                        .where((c) => c.completed != true)
+                                        .toList();
+                                if (customersForSelected.isEmpty) {
+                                  return Text(
+                                    'No appointments',
+                                    style: theme.textTheme.bodyMedium,
+                                  );
+                                }
+                                return Column(
+                                  children: customersForSelected
+                                      .map(
+                                        (c) => ListTile(
+                                          title: Text(c.displayTitle),
+                                          leading: const Icon(Icons.event_note),
+                                          onTap: () {
+                                            // Open the customer list/detail screen
+                                            Navigator.of(context).push(
+                                              MaterialPageRoute(
+                                                builder: (_) =>
+                                                    CustomerListInformationScreen(
+                                                      date: _selectedDate!,
+                                                      initialCustomerId: c.id,
+                                                    ),
+                                              ),
+                                            );
+                                          },
+                                        ),
+                                      )
+                                      .toList(),
+                                );
+                              },
+                            ),
+                          ],
+                        ),
+                ),
               ),
             ],
           ),
