@@ -179,13 +179,12 @@ class _AppoinmentScreenState extends State<AppoinmentScreen> {
                       );
                       final isSelectable =
                           isActive && !cellDate.isBefore(todayDate);
-                      final showMarker =
-                          isActive &&
-                          AppointmentRepository.instance.hasAppointmentsForDate(
-                            cellDate,
-                          );
+                      // Only show markers for remaining (not completed) appointments
                       final markerCount = AppointmentRepository.instance
-                          .countForDate(cellDate);
+                          .getForDate(cellDate)
+                          .where((c) => c.completed != true)
+                          .length;
+                      final showMarker = isActive && markerCount > 0;
                       return _DayCell(
                         day: day,
                         isActive: isActive,
@@ -239,9 +238,14 @@ class _AppoinmentScreenState extends State<AppoinmentScreen> {
                           const SizedBox(height: 8),
                           Builder(
                             builder: (context) {
+                              // Show only remaining (not completed) appointments in the
+                              // selected-day summary so the calendar marker counts
+                              // down as items are marked done.
                               final customersForSelected = AppointmentRepository
                                   .instance
-                                  .getForDate(_selectedDate!);
+                                  .getForDate(_selectedDate!)
+                                  .where((c) => c.completed != true)
+                                  .toList();
                               if (customersForSelected.isEmpty) {
                                 return Text(
                                   'No appointments',
