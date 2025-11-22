@@ -121,9 +121,11 @@ class _HomeScreenState extends State<HomeScreen> {
                     final int count = NotificationRepository.instance
                         .pendingCount();
                     return _ActionTile(
+                      key: ValueKey('tile-${item.title.replaceAll(' ', '-')}'),
                       label: item.title,
                       icon: item.icon,
                       badgeCount: count > 0 ? count : null,
+                      badgeKey: const ValueKey('badge-notification'),
                       onTap: () {
                         Navigator.of(context).push(
                           MaterialPageRoute(
@@ -135,6 +137,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   }
 
                   return _ActionTile(
+                    key: ValueKey('tile-${item.title.replaceAll(' ', '-')}'),
                     label: item.title,
                     icon: item.icon,
                     onTap: () {
@@ -232,6 +235,7 @@ class _ActionTile extends StatelessWidget {
   final IconData icon;
   final VoidCallback? onTap;
   final int? badgeCount;
+  final Key? badgeKey;
   // ignore: use_super_parameters
   const _ActionTile({
     Key? key,
@@ -239,6 +243,7 @@ class _ActionTile extends StatelessWidget {
     required this.icon,
     this.onTap,
     this.badgeCount,
+    this.badgeKey,
   }) : super(key: key);
 
   @override
@@ -280,6 +285,7 @@ class _ActionTile extends StatelessWidget {
                 right: 8,
                 top: 8,
                 child: Container(
+                  key: badgeKey,
                   padding: const EdgeInsets.symmetric(
                     horizontal: 8,
                     vertical: 4,

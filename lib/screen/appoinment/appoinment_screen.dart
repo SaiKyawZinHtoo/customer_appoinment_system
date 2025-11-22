@@ -202,7 +202,11 @@ class _AppoinmentScreenState extends State<AppoinmentScreen> {
                               .length
                         : 0;
                     final showMarker = isActive && markerCount > 0;
+                    final cellKey = ValueKey(
+                      'day-${cellDate.year}-${cellDate.month}-$day',
+                    );
                     return _DayCell(
+                      key: cellKey,
                       day: day,
                       isActive: isActive,
                       isSunday: (i % 7) == 0,
@@ -499,6 +503,7 @@ class _WeekdayHeader extends StatelessWidget {
 
 class _DayCell extends StatelessWidget {
   const _DayCell({
+    super.key,
     required this.day,
     required this.isActive,
     required this.isSunday,
